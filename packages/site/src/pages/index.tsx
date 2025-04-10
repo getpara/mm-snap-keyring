@@ -117,6 +117,7 @@ const Index = () => {
   const [triggerButtonOverrides, setTriggerButtonOverrides] = useState<Date>();
   const [modalStepOverride, setModalStepOverride] = useState<string>();
   const [isOpen, setIsOpen] = useState(false);
+  const [snapErrorMessage, setSnapErrorMessage] = useState<string>();
   const client = new KeyringSnapRpcClient(snapId, window.ethereum);
 
   const para = new Para(paraEnv as Environment, paraApiKey);
@@ -181,7 +182,14 @@ const Index = () => {
       setTriggerButtonOverrides(new Date());
     }
 
-    getState().catch((error) => console.error(error));
+    getState().catch((error) => {
+      console.error(error);
+      setSnapErrorMessage(
+        `You seem to be on an older version of this snap. Please delete the @usecapsule/account-snap
+        in MetaMask and refresh the page to install the new version. Your account linked to this snap
+        will not be deleted when you do this and you will be able to login with the same account.`,
+      );
+    });
   }, [state.setInstalledCalled, state.setMetaMaskDetectedCalled]);
 
   const syncAccounts = async () => {
@@ -317,6 +325,11 @@ const Index = () => {
       });
     } catch (error) {
       console.error(error);
+      setSnapErrorMessage(
+        `You seem to be on an older version of this snap. Please delete the @usecapsule/account-snap
+        in MetaMask and refresh the page to install the new version. Your account linked to this snap
+        will not be deleted when you do this and you will be able to login with the same account.`,
+      );
       dispatch({ type: MetamaskActions.SetError, payload: error });
     }
   };
@@ -443,6 +456,13 @@ const Index = () => {
           />
         </ReconnectContainer>
       ) : undefined}
+      <strong>{snapErrorMessage}</strong>
+      {snapErrorMessage ? (
+        <>
+          <br />
+          <br />
+        </>
+      ) : undefined}
       <Container>
         {addressDisplay ? (
           <WalletInfoContainer>
@@ -488,7 +508,9 @@ const Index = () => {
         ) : undefined}
       </Container>
     </>
-  ) : undefined;
+  ) : (
+    <strong>{snapErrorMessage}</strong>
+  );
 };
 
 export default Index;
